@@ -34,3 +34,6 @@ a2ensite jellyfin-proxy.conf
 a2enmod headers
 a2enmod proxy_http
 a2enmod proxy_wstunnel
+
+# Perform initial setup
+python /usr/local/src/jellyfin-setup.py

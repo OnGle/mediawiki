@@ -12,8 +12,6 @@ Options:
 
 import sys
 import getopt
-import subprocess
-from subprocess import PIPE
 import signal
 import JellyfinTools
 from JellyfinTools import UserClient
@@ -65,63 +63,8 @@ def main():
 
     server = jellyfin.getServer()
     url = "%s/web/login.html" % server
-    status = jellyfin.doUtils.downloadUrl(url, json=False, authenticate=False)
-
-    if (status == 302 or status == 'Redirect'):
-        # Perform initial Jellyfin setup
-        settings = "/etc/jellyfininitsetup"
-        try:
-            f = open(settings,'r')
-        except:
-            return
-
-        for line in f:
-            fields = line.split('|')
-            if '#' in fields[0]:
-                continue
-
-            jsonEnc = False
-            if (fields[2] == "json"):
-                jsonEnc = True
-            fields[1] = fields[1].replace("{server}", server, 1)
-            fields[1] = fields[1].replace("{user}", jellyfin.getUsername(), 1)
-            if len(fields) > 3:
-                fields[3] = fields[3].replace("{user}", jellyfin.getUsername(), 1)
-                jellyfin.doUtils.downloadUrl(fields[1], postBody=fields[3], type=fields[0], json=jsonEnc, authenticate=False)
-            else:
-                jellyfin.doUtils.downloadUrl(fields[1], type=fields[0], json=jsonEnc, authenticate=False)
-
-        f.close()
-
     jellyfin.currPass = oldpw
     jellyfin.authenticate()
-
-    # Perform remaining Jellyfin setup
-    settings = "/etc/jellyfinsetup"
-    try:
-        f = open(settings,'r')
-    except:
-        return
-
-    for line in f:
-        fields = line.split('|')
-        if '#' in fields[0]:
-            continue
-
-        jsonEnc = False
-        if (fields[2] == "json"):
-            jsonEnc = True
-        fields[1] = fields[1].replace("{server}", server, 1)
-        fields[1] = fields[1].replace("{user}", jellyfin.getUsername(), 1)
-        if len(fields) > 3:
-            fields[3] = fields[3].replace("{user}", jellyfin.getUsername(), 1)
-            if jsonEnc:
-                fields[3] = json.loads(fields[3])
-            jellyfin.doUtils.downloadUrl(fields[1], postBody=fields[3], type=fields[0], json=jsonEnc, authenticate=True)
-        else:
-            jellyfin.doUtils.downloadUrl(fields[1], type=fields[0], json=jsonEnc, authenticate=True)
-
-    f.close()
 
     # Change default user password
     url = "{server}/emby/Users/%s/Password" % jellyfin.getUserId()
