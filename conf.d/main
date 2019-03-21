@@ -1,4 +1,4 @@
-#!/bin/sh -ex
+#!/bin/bash -ex
 
 apt-get -y update
 apt-get -y dist-upgrade
@@ -35,5 +35,21 @@ a2enmod headers
 a2enmod proxy_http
 a2enmod proxy_wstunnel
 
+# Fix for broken init.d script, download latest from upstream.
+# (note this should be unnecessary for releases AFTER 10.2.2)
+wget https://github.com/jellyfin/jellyfin/raw/0e787f4e9fb9f4a7159ca75bcd319c7f908df9a3/deployment/debian-package-x64/pkg-src/jellyfin.init -O /etc/init.d/jellyfin
+chmod +x /etc/init.d/jellyfin
+
+service jellyfin start
+service apache2 start
+
+until curl -sSf http://localhost:8096 > /dev/null
+do
+    sleep 1
+done
+sleep 5
+
 # Perform initial setup
 python /usr/local/src/jellyfin-setup.py
+service jellyfin stop
+service apache2 stop

@@ -7,6 +7,7 @@ import sys
 # used to load JellyfinTools
 sys.path.append('/usr/lib/inithooks/bin')
 import JellyfinTools
+from JellyfinTools import UserClient
 import json
 
 def fatal(s):
@@ -21,6 +22,7 @@ def usage(s=None):
     sys.exit(1)
 
 def main():
+    jellyfin = UserClient()
     server = jellyfin.getServer()
     url = "%s/web/login.html" % server
     status = jellyfin.doUtils.downloadUrl(url, json=False, authenticate=False)
@@ -49,8 +51,15 @@ def main():
             else:
                 jellyfin.doUtils.downloadUrl(fields[1], type=fields[0], json=jsonEnc, authenticate=False)
 
-        f.close()
-
+    pwfile = "/etc/jellyfinpass"
+    oldpw = None
+    try:
+        f = open(pwfile,'r')
+    except:
+        oldpw = ""
+    else:
+        oldpw = f.readline().rstrip('\r\n')
+    
     jellyfin.currPass = oldpw
     jellyfin.authenticate()
 
